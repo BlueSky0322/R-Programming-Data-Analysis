@@ -1,0 +1,131 @@
+---
+title: 'QSS Homework 3'
+author: "姓名:_______  ;  学号：________ " 
+date: "截止日期: Saturday Jan.15, 2022,12:00 AM" # date: ""
+# documentclass: ctexart #pdf_document 如下设置，这一句一定要commment out
+output:
+  pdf_document: 
+    latex_engine: xelatex
+    extra_dependencies:
+      ctex: UTF8 #一定要保留前面的空格作为二级目录
+    number_sections: yes
+    df_print: kable
+    toc: yes
+  word_document: 
+     toc: yes
+     number_sections: yes
+     fig_caption: yes
+  html_document:  # html_document: default
+      toc: true
+      toc_float: true
+      collapse: true
+      smooth_scroll: true
+      number_sections: true
+classoption: "hyperref," #用于传递参数，比如latex 中\documentclass[your_usual_option]{beamer} 内部[your_usual_option]的参数。
+---
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# 工作路径 before starting, setting directory to source location
+directory <-getwd()
+directory
+
+getOption("max.print")
+options(max.print=999999)
+```
+
+**需要用到的扩展包** 
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+library("tidyverse")
+library(qss)
+library(devtools)
+```
+
+**中文字体显示设置** 
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# 中文字体显示
+if(!require(showtext)){install.packages("showtext")}#调用系统已安装的字体，显示中文字体
+showtext_auto(enable=TRUE) #自动显示中文
+# # 开始使用showtext
+# showtext_begin()
+# # 停止使用showtext
+# showtext_end()
+```
+
+
+
+# Exercise Set 1(textbook p.174) 
+**需要用到的数据**
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(intrade08, package="qss")
+# 或者
+intrade08 <- read.csv("Data/intrade08.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(intrade12, package="qss")
+# 或者
+intrade12 <- read.csv("Data/intrade12.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(pres08, package="qss")
+# 或者
+pres08 <- read.csv("Data/pres08.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(pres12, package="qss")
+# 或者
+pres12 <- read.csv("Data/pres12.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(polls08, package="qss")
+# 或者
+polls08 <- read.csv("Data/polls08.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(polls12, package="qss")
+# 或者
+polls12 <- read.csv("Data/polls12.csv")
+```
+
+4.5.1基于博彩市场的预测
+在本章的前面我们研究了使用民意调查预测选举结果。在这里，我们研究如何用博彩市场的数据预测选举结果。特别地，我们从名为Intrade的在线博彩公司分析了2008年和2012年美国总统选举的数据。在Intrade上，人们交易合同是类似于“奥巴马赢得佛罗里达州的选票”。每份合同的市场价格根据其销售额而波动。为什么我们可以期待像Intrade这样的投注市场准确预测选举或其他事件的结果？一些人认为市场可以有效地汇总可用信息。在本练习中，我们将通过分析民主党和共和党候选人在每个州胜利的合同的市场价格来检验这种有效市场假设。
+2008年和2012年的数据文件都以CSV格式提供，分别为intrade08.csv和intrade12.csv。表4.9列出了这些数据集的名称和描述。数据集的每一行代表关于民主党或共和党候选人在特定州获胜的合同的每日交易信息。我们还将使用选举结果数据。这些数据文件是pres08.csv(见表4.1)和pes12.csv(见表4.5)。
+![表4.9](table/table 4.9.png)
+
+## Question 1
+1.我们将首先使用选举前一天的市场价格来预测2008年的选举结果。为此，首先将数据子集化，使其仅包含选举前一天每个州和候选人的市场信息。请注意，在2008年，选举日是11月4日。我们比较特定州两个候选人的收盘价，并将合同价格较高的候选人分类为该州的预测赢家。哪些州被错误分类了？这与本章前面提到的民意调查的分类相比如何？对2012年11月6日举行的选举重复相同的分析。与2008年相比，2012年预测市场的表现如何？请注意，2012年一些竞争不太激烈的州在选举前一天缺失数据，因为共和党和民主党投注市场没有交易。这里，假设Intrade对于这些状态的预测是准确的。(10')
+
+
+## Question 2
+2.基于博彩市场的预测如何随时间而变化？在2008年活动的最后90天，而不仅仅是选举前一天，实施与上述相同的分类程序。绘制在这90天期间民主党候选人的预计选举人票数的图。由此绘制的图也应标明实际的选举结果。请注意，在2008年，奥巴马赢得了365张选举人票。简要评论该图。(10')
+
+## Question 3
+3.重复上一个练习，这次使用州中每个候选人的七天移动平均价格而不是每日价格。正如第4.1.3节一样，这可以通过循环完成。对于某一天，我们采用过去七天(包括当天)内的合同收盘价的平均值。要回答这个问题，我们必须先计算每个州的七天平均值。接下来，我们加总奥巴马预计会赢的选举人票。使用tapply()函数将允许我们有效地计算给定日期每个州的预测赢家。(20')
+
+## Question 4
+4.使用数据文件polls08.csv为2008年全州范围的民意调查预测创建类似的图表(参见表4.2)。请注意，并不是每个州每天都会进行民意调查。因此，在给定州，对于活动的最后90天中的每一天，我们计算最近进行的民意调查的平均获胜幅度。如果在同天有多次民意调查，请对这些民意调查的结果进行平均。根据每个州的最新预测，加总奥巴马预计选举人票的总数。回答这个问题的一个策略是编程两个循环——一个内循环，有51个迭代(对应于每个州)；一个外循环，有90个迭代(对应于每天)。(20')
+
+## Question 5
+5.Intrade市场的价格获胜幅度与实际的获胜幅度之间有什么关系？仅使用2008年大选前一天的市场数据，将奥巴马在每州的实际获胜幅度对奥巴马在Intrade市场的获胜幅度回归。同样，在额外的分析中，将奥巴马在每州的实际获胜幅度对每个州内最新民意调查中奥巴马的获胜幅度进行回归。阐释这些回归的结果。(20')
+
+## Question 6 
+6.2008年的民意调查和Intrade的预测是否准确地预测了各州2012年的选举结果？使用前一个问题的拟合回归，以两种方式预测奧巴马2012年大选的实际获胜幅度。首先，使用选举前一天2012年的Intrade价格获胜幅度作为每个州的预测因子。注意，2012年Intrade数据不包含所有州的市场价格。忽略没有数据的州。然后使用来自各州最新民意调查的2012年民意调查预测获胜幅度作为预测因子(见polls12.csv)。表4.10列出了2012年美国总统选举投票数据的名称和描述。(20')
+
+![表4.10](table/table 4.10.png)
+

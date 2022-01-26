@@ -1,0 +1,457 @@
+---
+title: 'QSS Homework 3'
+author: "姓名: 刘欢宜 LIEW Huan Yeei  ;  学号：20300176014 " 
+date: "截止日期: Saturday Jan.15, 2022,12:00 AM" # date: ""
+# documentclass: ctexart #pdf_document 如下设置，这一句一定要commment out
+output:
+  pdf_document: 
+    latex_engine: xelatex
+    extra_dependencies:
+      ctex: UTF8 #一定要保留前面的空格作为二级目录
+    number_sections: yes
+    df_print: kable
+    toc: yes
+  word_document: 
+     toc: yes
+     number_sections: yes
+     fig_caption: yes
+  html_document:  # html_document: default
+      toc: true
+      toc_float: true
+      collapse: true
+      smooth_scroll: true
+      number_sections: true
+classoption: "hyperref," #用于传递参数，比如latex 中\documentclass[your_usual_option]{beamer} 内部[your_usual_option]的参数。
+---
+
+```{r setup}
+knitr::opts_knit$set(root.dir = normalizePath("C:/Users/Asus/Documents")) 
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# 工作路径 before starting, setting directory to source location
+directory <-getwd()
+directory
+
+getOption("max.print")
+options(max.print=999999)
+```
+
+**需要用到的扩展包** 
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+library("tidyverse")
+install.packages("devtools")
+library("devtools")
+install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+```
+
+**中文字体显示设置** 
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# 中文字体显示
+if(!require(showtext)){install.packages("showtext")}#调用系统已安装的字体，显示中文字体
+showtext_auto(enable=TRUE) #自动显示中文
+# # 开始使用showtext
+# showtext_begin()
+# # 停止使用showtext
+# showtext_end()
+```
+
+
+
+# Exercise Set 1(textbook p.174) 
+**需要用到的数据**
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(intrade08, package="qss")
+# 或者
+intrade08 <- read.csv("C:/Users/Asus/Desktop/LHY/intrade08.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(intrade12, package="qss")
+# 或者
+intrade12 <- read.csv("C:/Users/Asus/Desktop/LHY/intrade12.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(pres08, package="qss")
+# 或者
+pres08 <- read.csv("C:/Users/Asus/Desktop/LHY/pres08.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(pres12, package="qss")
+# 或者
+pres12 <- read.csv("C:/Users/Asus/Desktop/LHY/pres12.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(polls08, package="qss")
+# 或者
+polls08 <- read.csv("C:/Users/Asus/Desktop/LHY/polls08.csv")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
+# library("devtools")
+# install_github("kosukeimai/qss-package", build_vignettes = TRUE)
+data(polls12, package="qss")
+# 或者
+polls12 <- read.csv("C:/Users/Asus/Desktop/LHY/polls12.csv")
+```
+
+4.5.1基于博彩市场的预测
+在本章的前面我们研究了使用民意调查预测选举结果。在这里，我们研究如何用博彩市场的数据预测选举结果。特别地，我们从名为Intrade的在线博彩公司分析了2008年和2012年美国总统选举的数据。在Intrade上，人们交易合同是类似于“奥巴马赢得佛罗里达州的选票”。每份合同的市场价格根据其销售额而波动。为什么我们可以期待像Intrade这样的投注市场准确预测选举或其他事件的结果？一些人认为市场可以有效地汇总可用信息。在本练习中，我们将通过分析民主党和共和党候选人在每个州胜利的合同的市场价格来检验这种有效市场假设。
+2008年和2012年的数据文件都以CSV格式提供，分别为intrade08.csv和intrade12.csv。表4.9列出了这些数据集的名称和描述。数据集的每一行代表关于民主党或共和党候选人在特定州获胜的合同的每日交易信息。我们还将使用选举结果数据。这些数据文件是pres08.csv(见表4.1)和pes12.csv(见表4.5)。
+![表4.9](Table/table 4.9.png)
+
+## Question 1
+1.我们将首先使用选举前一天的市场价格来预测2008年的选举结果。为此，首先将数据子集化，使其仅包含选举前一天每个州和候选人的市场信息。请注意，在2008年，选举日是11月4日。我们比较特定州两个候选人的收盘价，并将合同价格较高的候选人分类为该州的预测赢家。哪些州被错误分类了？这与本章前面提到的民意调查的分类相比如何？对2012年11月6日举行的选举重复相同的分析。与2008年相比，2012年预测市场的表现如何？请注意，2012年一些竞争不太激烈的州在选举前一天缺失数据，因为共和党和民主党投注市场没有交易。这里，假设Intrade对于这些状态的预测是准确的。(10')
+
+```{r}
+#以州为单位合并2008年合同市场价格数据和选举结果数据
+intraderesults08 <- merge(intrade08, pres08, by = "state")
+View(intraderesults08)
+
+#合同市场价格和选举结果的获胜幅度（Obama比McCain的票数高出的百分点）
+intraderesults08$predictedmargin <- intraderesults08$PriceD - intraderesults08$PriceR
+intraderesults08$margin <- intraderesults08$Obama - intraderesults08$McCain
+
+#使数据仅包含选举前一天的信息、找出被错误分类的州
+latest08 <- subset(intraderesults08, subset = (day == "2008-11-03"))
+latest08$state[sign(latest08$predictedmargin) != sign(latest08$margin)]
+
+#Indiana和Missouri州被错误分类了。
+#在本章前面的民意调查中，Indiana，Missouri和North Carolina州被错误分类了。而按照合同市场价格预测选举结果，North Carolina州被正确分类。二者相比之下，按照合同市场价格预测选举结果比按照民意调查预测选举结果来得更准确一些。
+```
+
+```{r}
+#以州为单位合并2012年合同市场价格数据和选举结果数据
+intraderesults12 <- merge(intrade12, pres12, by = "state")
+View(intraderesults12)
+
+#合同市场价格和选举结果的获胜幅度（Obama比Romney的票数高出的百分点）
+intraderesults12$predictedmargin <- intraderesults12$PriceD - intraderesults12$PriceR
+intraderesults12$margin <- intraderesults12$Obama - intraderesults12$Romney
+
+#使数据仅包含选举前一天的信息、找出被错误分类的州
+latest12 <- subset(intraderesults12, subset = (day == "2012-11-05"))
+latest12$state[sign(latest12$predictedmargin) != sign(latest12$margin)]
+
+# Florida州被错误分类了。
+#与2008年相比，2012年预测市场的表现更为准确一些，被错误分类的州的数量由2个减少至1个。
+
+sum(is.na(latest12$predictedmargin))
+# 共有10个竞争不太激烈的州在选举前一天缺失数据。
+```
+
+
+## Question 2
+2.基于博彩市场的预测如何随时间而变化？在2008年活动的最后90天，而不仅仅是选举前一天，实施与上述相同的分类程序。绘制在这90天期间民主党候选人的预计选举人票数的图。由此绘制的图也应标明实际的选举结果。请注意，在2008年，奥巴马赢得了365张选举人票。简要评论该图。(10')
+
+```{r}
+#将变量day转换成Date类别
+intraderesults08$day <- as.Date(intraderesults08$day)
+
+#计算还有多少天到选举日
+intraderesults08$DaysToElection <- as.Date("2008-11-04") - intraderesults08$day
+
+#实施与上述相同的分类程序
+Obama.dailypred.EV08 <- rep(NA, 90)
+for (i in 1:90){
+days.data <- subset(intraderesults08, subset = (DaysToElection == i))
+Obama.dailypred.EV08[91-i] <- sum(days.data$EV[days.data$predictedmargin > 0])
+}
+
+#绘制在这90天期间民主党候选人的预计选举人票数的图 
+plot(90:1, Obama.dailypred.EV08, type = "b",
+ xlim = c(90, 0),
+ ylim = c(200, 400),
+ col = "blue", 
+ xlab = "Days to the Election", 
+ ylab = "Support for Candidate (In Trade)")
+ abline(v=0)
+ #标明实际的选举结果
+ points(0, 365, pch = 19, col = "black") 
+ text(1, 375, "Actual", pch = 5, col = "black")
+ 
+#基于博彩市场的预测，民主党候选人的预计选举人票数随时间而变化。在距离选举日仍有90至60天的时间时，民主党候选人的预计选举人票数大约在300张左右。在距离选举日大约仍有55天时，民主党候选人的预计选举人票数跌至大约220张左右。在距离选举日仍有55至25天时，民主党候选人的预计选举人票数持续上升。在距离选举日仍有25至0天时，民主党候选人的预计选举人票数一直保持在365张左右。总的来说，在这90天期间，民主党候选人的预计选举人票数先有轻微的波动，然后跌至谷底，之后持续上升，最后保持在同一水平。
+```
+
+
+## Question 3
+3.重复上一个练习，这次使用州中每个候选人的七天移动平均价格而不是每日价格。正如第4.1.3节一样，这可以通过循环完成。对于某一天，我们采用过去七天(包括当天)内的合同收盘价的平均值。要回答这个问题，我们必须先计算每个州的七天平均值。接下来，我们加总奥巴马预计会赢的选举人票。使用tapply()函数将允许我们有效地计算给定日期每个州的预测赢家。(20')
+
+```{r}
+st.names <- unique(pres08$state)
+vote.d <- rep(NA,90)
+for (i in 90:1) {
+  week.data <- subset(intrade08,DaysToElection >= i & DaysToElection <= i+6)
+  week.price <- tapply(week.data$PriceD-week.data$PriceR, week.data$state, mean)
+  win.states.d <- names(week.price[week.price>0])
+  win.data.d <- subset(pres08,state %in% win.states.d)
+  vote.d[91-i] <- sum(win.data.d$EV)
+}
+#抽取将重复循环的州名
+st.names <- unique(pres08$state)
+
+#采用过去七天(包括当天)内的合同收盘价的平均值
+Obama.pred7 <- rep(NA, 90)
+for(i in 1:90){
+  week.data <- subset(intraderesults08, subset = ((DaysToElection <= (90 - i + 7)) & (DaysToElection > (90 - i))))
+  #week.data <- subset(intraderesults08, DaysToElection >= i & DaysToElection <= i+6)
+#使用tapply()函数计算给定日期的预测赢家
+  week.price <- tapply(week.data$PriceD-week.data$PriceR, week.data$state, mean)
+  winning.state <- names(week.price[week.price>0])
+  winning.data <- subset(pres08,state %in% winning.state)
+  Obama.pred7[i] <- sum(winning.data$EV)
+}
+
+#绘制在这90天期间博彩市场七天移动平均价格的预计选举人票数的图 
+plot(90:1, Obama.pred7, type = "b",
+ col = "blue", 
+ xlab = "Days to the Election",
+ xlim = c(90, 0),
+ ylim = c(0, 540),
+ ylab = "Support for Candidate to Obama (In Trade)")
+
+abline(h = 365)
+text(5, 380, "Actual", pch = 5, col = "black")
+
+abline(h = 270, col = "red", lty = "dashed")
+text(10, 285, "Winning threshold", pch = 5, col = "red")
+
+abline(v = 0)
+```
+
+
+## Question 4
+4.使用数据文件polls08.csv为2008年全州范围的民意调查预测创建类似的图表(参见表4.2)。请注意，并不是每个州每天都会进行民意调查。因此，在给定州，对于活动的最后90天中的每一天，我们计算最近进行的民意调查的平均获胜幅度。如果在同天有多次民意调查，请对这些民意调查的结果进行平均。根据每个州的最新预测，加总奥巴马预计选举人票的总数。回答这个问题的一个策略是编程两个循环——一个内循环，有51个迭代(对应于每个州)；一个外循环，有90个迭代(对应于每天)。(20')
+
+```{r}
+##将变量middate转换成Date类别
+polls08$middate <- as.Date(polls08$middate)
+
+#计算还有多少天到选举日
+polls08$DaysToElection <- as.Date("2008-11-04") - polls08$middate
+
+polls08$margin <- polls08$Obama - polls08$McCain
+
+state.names <- unique(pres08$state)
+
+poll.data <- rep(0,90)
+for (i in 1:90){
+  for (j in 1:51){
+    state.polls <- subset(polls08, state == state.names[j])
+    state.polls <- subset(state.polls, DaysToElection == min(DaysToElection[DaysToElection >= i]))
+    state.average.margin <- mean(state.polls$margin)
+    if (state.average.margin > 0){
+      state.ev <- subset(pres08, state == state.names[j])$EV
+      poll.data[i] <- poll.data[i] + state.ev
+    }
+  }
+}
+plot(x = 1:90,
+     y = poll.data,
+     col = "blue",
+     xlab ="Days To Election",
+     ylab ="Votes for Obama",
+     xlim = c(90, 1),
+     ylim = c(0, 540))
+
+abline(h = 365)
+text(5, 380, "Actual", pch = 5, col = "black")
+
+abline(h = 270, col = "red", lty = "dashed")
+text(10, 285, "Winning threshold", pch = 5, col = "red")
+
+abline(v = 0)
+
+```
+
+
+## Question 5
+5.Intrade市场的价格获胜幅度与实际的获胜幅度之间有什么关系？仅使用2008年大选前一天的市场数据，将奥巴马在每州的实际获胜幅度对奥巴马在Intrade市场的获胜幅度回归。同样，在额外的分析中，将奥巴马在每州的实际获胜幅度对每个州内最新民意调查中奥巴马的获胜幅度进行回归。阐释这些回归的结果。(20')
+
+```{r}
+##PART 1
+#converting day column data to date format
+intrade08$day <- as.Date(intrade08$day)
+
+#retrieve data from a day before election
+intrade.data <- subset(intrade08, (as.Date("2008-11-04") - intrade08$day) == 1)
+
+#price margins of the Intrade market
+intrade.data$intrade.margin <- intrade.data$PriceD - intrade.data$PriceR
+
+#margin of victory for Obama
+pres08$victory.margin <- pres08$Obama - pres08$McCain
+ 
+#merging the intrade and victory margins into new data frame grouped by state
+regression.model.data <- merge(intrade.data[, c("state","intrade.margin")], pres08[, c("state","victory.margin")], by = "state")
+
+#linear regression results stored in new variable
+intrade.regression.model.fit <- lm(victory.margin~intrade.margin, data = regression.model.data)
+
+#output of the linear regression model
+summary(intrade.regression.model.fit)
+
+#plot to interpret linear regression results
+plot(x = regression.model.data$intrade.margin,
+     y = regression.model.data$victory.margin,
+     xlab = "Intrade Price Margin",
+     ylab = "Actual Victory Margin",
+     xlim = c(-100, 100), ylim = c(-100, 100))
+
+#dashed lines to reveal (0,0) coordinates of graph
+abline(h = 0, v = 0, lty = "dashed")
+
+#solid line to show best fit
+abline(intrade.regression.model.fit, col = "red")
+
+
+
+
+##PART 2
+#converting day column data to date format
+polls08$middate <- as.Date(polls08$middate)
+
+#retrieve data from a day before election
+polls08$DaysToElection <- as.Date("2008-11-04") - polls08$middate
+
+#poll margins of each state
+polls08$margin <- polls08$Obama - polls08$McCain
+
+#retrieve all unique state name, then sort alphabetically
+state.names <- unique(pres08$state)
+state.names <- sort(state.names)
+
+#create empty vector, populate with state names as columns
+state.poll.margin <- rep(NA,51)
+names(state.poll.margin) <- as.character(state.names)
+
+#retrieve the latest poll margin of each state
+for (i in 1:51){
+  state.data <- subset(polls08, state == state.names[i]) 
+  latest.poll <- subset(state.data, DaysToElection == min(DaysToElection))
+  state.poll.margin[i] <- mean(latest.poll$margin) #average the poll margin if more than one poll conducted that day
+} 
+#rearranging vector into data frame, add state column
+state.poll.data <- data.frame(state = state.names, state.poll.margin)
+
+#margin of victory for Obama
+pres08$victory.margin <- pres08$Obama - pres08$McCain
+
+#merging the state poll and victory margins into new data frame grouped by state
+regression.model.data2 <- merge(state.poll.data[, c("state","state.poll.margin")], pres08[, c("state","victory.margin")], by = "state")
+
+#linear regression results stored in new variable
+statepoll.regression.model.fit <- lm(victory.margin~state.poll.margin, data = regression.model.data2)
+
+#output of the linear regression model
+summary(statepoll.regression.model.fit)
+
+#plot to interpret linear regression results
+plot(x = regression.model.data2$state.poll.margin,
+     y = regression.model.data2$victory.margin,
+     xlab = "State Poll Margin",
+     ylab = "Actual Victory Margin",
+     xlim = c(-100, 100), ylim = c(-100, 100))
+
+#dashed lines to reveal (0,0) coordinates of graph
+abline(h = 0, v = 0, lty = "dashed")
+
+#solid line to show best fit
+abline(statepoll.regression.model.fit, col = "red")
+```
+
+
+## Question 6 
+6.2008年的民意调查和Intrade的预测是否准确地预测了各州2012年的选举结果？使用前一个问题的拟合回归，以两种方式预测奧巴马2012年大选的实际获胜幅度。首先，使用选举前一天2012年的Intrade价格获胜幅度作为每个州的预测因子。注意，2012年Intrade数据不包含所有州的市场价格。忽略没有数据的州。然后使用来自各州最新民意调查的2012年民意调查预测获胜幅度作为预测因子(见polls12.csv)。表4.10列出了2012年美国总统选举投票数据的名称和描述。(20')
+Do the 2008 predictions of polls and Intrade accurately predict each state’s 2012
+elections results? Using the fitted regressions from the previous question, forecast
+Obama’s actual margin of victory for the 2012 election in two ways. First, use the
+2012 Intrade price margins from the day before the election as the predictor in
+each state. Recall that the 2012 Intrade data do not contain market prices for all
+states. Ignore states without data. Second, use the 2012 poll-predicted margins
+from the latest polls in each state as the predictor, found in polls12.csv.
+Table 4.10 presents the names and descriptions of the 2012 US presidential
+election polling data.
+
+![表4.10](Table/table 4.10.png)
+
+```{r}
+##PART1
+#ignore state with NA data
+intrade12.data <- subset(intrade12, !is.na(PriceD) | !is.na(PriceR))
+
+#retrieve intrade price margin from a day before 2012 election
+intrade12.data <- subset(intrade12, (as.Date("2012-11-06") - as.Date(intrade12$day)) == 1)
+intrade12.data$price.margin <- intrade12.data$PriceD - intrade12.data$PriceR
+
+#将上述价格代入由2008年数据线性拟合拟合得到的模型，得到预测值
+intrade12.data$prediction <- coef(intrade.regression.model.fit)[1] + coef(intrade.regression.model.fit)[2]*(intrade12.data$price.margin)
+
+#margin of victory for Obama
+pres12$victory.margin <- pres12$Obama - pres12$Romney
+
+#merging the intrade predicted margins and victory margins into new data frame grouped by state
+plot.data <- merge(intrade12.data[, c("state", "price.margin", "prediction")], pres12[, c("state", "victory.margin")], by="state")
+
+#比对预测值和2012年大选各州实际情况
+plot(x = plot.data$prediction, 
+     y = plot.data$victory.margin,
+     col = "blue",
+     xlab = "Predicted outcome", ylab = "Actual outcome",
+     xlim = c(-100, 100), ylim = c(-100, 100))
+abline(a = 0, b = 1, col = "black", lty = "dashed") #line to show deviation from actual values
+
+
+##PART2
+#converting day column data to date format
+polls12$middate <- as.Date(polls12$middate)
+
+#retrieve data from a day before election
+polls12$DaysToElection <- as.Date("2012-11-06") - polls12$middate
+
+#poll margins of each state
+polls12$victory.margin <- polls12$Obama - polls12$Romney
+
+#retrieve all unique state name, then sort alphabetically
+state.names <- unique(pres12$state)
+state.names <- sort(state.names)
+
+#create empty vector, populate with state names as columns
+state.poll.margin <- rep(NA,51)
+names(state.poll.margin) <- as.character(state.names)
+
+#retrieve the latest poll margin of each state
+for (i in 1:51){
+  state.data <- subset(polls12, state == state.names[i]) 
+  latest.poll <- subset(state.data, DaysToElection == min(DaysToElection))
+  state.poll.margin[i] <- mean(latest.poll$margin*-1) #average the poll margin if more than one poll conducted that day
+} 
+#rearranging vector into data frame, add state column
+state.poll.data <- data.frame(state = state.names, state.poll.margin)
+
+plot.data <- merge(pres12, state.poll.data)[, c("state","victory.margin","state.poll.margin")]
+#将上述价格代入由2008年数据线性拟合拟合得到的模型，得到预测值
+plot.data$prediction <- coef(statepoll.regression.model.fit)[1] + coef(statepoll.regression.model.fit)[2]*(plot.data$state.poll.margin)
+
+#比对预测值和2012年大选各州实际情况
+plot(x = plot.data$prediction, 
+     y = plot.data$state.poll.margin,
+     col = "blue",
+     xlab = "Predicted outcome", ylab = "Actual outcome",
+     xlim = c(-100, 100), ylim = c(-100, 100))
+abline(a = 0, b = 1, col = "black", lty = "dashed") #line to show deviation from actual values
+```
+
