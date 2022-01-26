@@ -7,7 +7,7 @@ Your analysis should be deep and in details, also it must go further than what h
 
 You also may need to pre-process your data to get it into an appropriate format. The assignment should involve a number of techniques by categorize it into different criteria and a detailed exploration with the commands using in each criteria. Outline the findings, analyze them and justify correctly with an appropriate graph. Also, a supporting document is needed to reflect the graph and code using R programming concepts.
 
-------------
+-------------
 This dataset contains the data of staffs within an organization that could determine some hidden issue in human resources management. Human resource department manager assigned you to perform analysis with the given dataset to identify hidden problem in the organization and provide meaningful insight for decision making. 
 
 The techniques used to explore the dataset using various data exploration, manipulation, transformation, and visualization techniques which covered in the course. And as an additional feature must explore the further concepts which can improve the retrieval effects.
